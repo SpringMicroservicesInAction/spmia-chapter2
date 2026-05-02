@@ -13,7 +13,7 @@
     <parent>
          <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-starter-parent</artifactId>
-           <version>1.4.4.RELEASE</version>
+           <version>2.7.18</version>
            <relativePath/>
            <!-- lookup parent from repository -->
     </parent>
@@ -30,7 +30,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <start-class>com.thoughtmechanix.licenses.Application</start-class>
 	      <docker.image.name>johncarnell/tmx-licensing-service</docker.image.name>
@@ -64,25 +64,60 @@
                </executions>
            </plugin>
            <plugin>
-               <groupId>com.spotify</groupId>
-               <artifactId>docker-maven-plugin</artifactId>
-               <version>0.4.10</version>
-               <configuration>
-                   <imageName>${docker.image.name}:${docker.image.tag}</imageName>
-                   <dockerDirectory>${basedir}/target/dockerfile</dockerDirectory>
-                   <resources>
-                       <resource>
-                           <targetPath>/</targetPath>
-                           <directory>${project.build.directory}</directory>
-                           <include>${project.build.finalName}.jar</include>
-                       </resource>
-                   </resources>
-               </configuration>
-           </plugin>
-           <plugin>
                <groupId>org.springframework.boot</groupId>
                <artifactId>spring-boot-maven-plugin</artifactId>
            </plugin>
+           <plugin>
+               <groupId>io.fabric8</groupId>
+               <artifactId>docker-maven-plugin</artifactId>
+               <version>0.48.1</version>
+               <configuration>
+                   <outputDirectory>${project.basedir}/.docker-build</outputDirectory>
+                   <images>
+                       <image>
+                           <name>${docker.image.name}:${docker.image.tag}</name>
+                           <build>
+                               <dockerFile>${project.build.directory}/dockerfile/Dockerfile</dockerFile>
+                               <contextDir>${project.build.directory}</contextDir>
+                           </build>
+                       </image>
+                   </images>
+               </configuration>
+           </plugin>
        </plugins>
    </build>
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>docker-build</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.image.name}:${docker.image.tag}</argument>
+                                        <argument>-f</argument>
+                                        <argument>${project.build.directory}/dockerfile/Dockerfile</argument>
+                                        <argument>${project.build.directory}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

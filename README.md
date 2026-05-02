@@ -9,9 +9,13 @@ Welcome to Spring Microservices in Action, Chapter 2.  Chapter 2 focuses on what
 # Building the Docker Images for Chapter 2
 To build the code examples for Chapter 2 as a docker image, open a command-line window change to the directory where you have downloaded the chapter 2 source code.
 
-Run the following maven command.  This command will execute the [Spotify docker plugin](https://github.com/spotify/docker-maven-plugin) defined in the pom.xml file.  
+Run the following maven command. This command builds the licensing service and runs the Docker CLI through the Maven `docker` profile.
 
-   **mvn clean package docker:build**
+   **mvn -pl licensing-service verify -Pdocker -DskipTests**
+
+Or use the Makefile shortcut:
+
+   **make docker-build**
 
 If everything builds successfully you should see a message indicating that the build was successful.
 
